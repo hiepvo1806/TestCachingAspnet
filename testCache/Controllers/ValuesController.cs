@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Web.Http;
+using Newtonsoft.Json;
 
 namespace testCache.Controllers
 {
@@ -15,17 +16,17 @@ namespace testCache.Controllers
         public IEnumerable<string> Get()
         {
             var callTime = DateTime.Now;
-            Thread.Sleep(5000);
             return new [] { $" call time : {callTime}, afterTime: {DateTime.Now}" };
         }
 
-        public string Get(string key)
+        [Route("GetValueType")]
+        public string GetValueType(string key)
         {
             var callTime = DateTime.Now;
             var cachedValue = GetValueTypeCache<int?>(key);
             if (cachedValue != null)
             {
-                return $"Cached with key {key} found with value : {cachedValue}";
+                return $"Cached Value with key {key} found with value : {cachedValue}";
             }
 
             Thread.Sleep(5000);
@@ -34,7 +35,31 @@ namespace testCache.Controllers
             return $" call time : {callTime}, afterTime: {DateTime.Now}, Key: {key},value: {saveVal}";
         }
 
-        private T GetCache<T>(string cacheKey) where T: class, new() 
+        [Route("GetObjectType")]
+        public string GetObjectType(string key)
+        {
+            var callTime = DateTime.Now;
+            var cachedValue = GetObjectCache< TestSaveCacheObject>(key);
+            if (cachedValue != null)
+            {
+                return $"Cached Object with key {key} found with value : { JsonConvert.SerializeObject(cachedValue) }";
+            }
+
+            Thread.Sleep(5000);
+            var saveObj = new TestSaveCacheObject()
+            {
+                EndDate = DateTime.Now,
+                StartDate = callTime,
+                Value = DateTime.Now.Second,
+                Name = "cached obj Jeff"
+            };
+            
+            SetCache(key, saveObj);
+            return $" call time : {callTime}, afterTime: {DateTime.Now}, Key: {key},value: {JsonConvert.SerializeObject(saveObj)}";
+        }
+
+
+        private T GetObjectCache<T>(string cacheKey) where T: class
         {
             ObjectCache cache = MemoryCache.Default;
             T obj = cache[cacheKey] as T;
@@ -56,5 +81,13 @@ namespace testCache.Controllers
             cache.Set(cacheKey, cacheObj, policy);
         }
 
+    }
+
+    public class TestSaveCacheObject
+    {
+        public string Name { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int Value { get; set; }
     }
 }
