@@ -61,7 +61,12 @@ namespace testCache.Controllers
     }
 
     public static class CacheService {
-
+        /*
+         * The as operator is like a cast operation. However, if the conversion isn't possible,
+         * as returns null instead of raising an exception. Consider the following example:
+         * Note that the as operator performs only reference conversions, nullable conversions, and boxing conversions
+         * https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/as
+         */
         public static T GetObjectCache<T>(string cacheKey) where T : class
         {
             ObjectCache cache = MemoryCache.Default;
