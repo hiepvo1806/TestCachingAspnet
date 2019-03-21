@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,6 +22,7 @@ namespace testCache.Controllers
         [Route("GetValueType")]
         public string GetValueType(string key)
         {
+            var timeout = int.Parse(ConfigurationManager.AppSettings["MemoryCacheTimeoutInSeconds"]) ;
             var callTime = DateTime.Now;
             var cachedValue = CacheService.GetValueTypeCache<int?>(key);
             if (cachedValue != null)
@@ -30,7 +32,7 @@ namespace testCache.Controllers
 
             Thread.Sleep(5000);
             var saveVal = DateTime.Now.Second;
-            CacheService.SetCache(key, saveVal, 30);
+            CacheService.SetCache(key, saveVal, timeout);
             return $" call time : {callTime}, afterTime: {DateTime.Now}, Key: {key},value: {saveVal}";
         }
 
