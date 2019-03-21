@@ -23,7 +23,7 @@ namespace testCache.Controllers
         public string GetValueType(string key)
         {
             var callTime = DateTime.Now;
-            var cachedValue = GetValueTypeCache<int?>(key);
+            var cachedValue = CacheService.GetValueTypeCache<int?>(key);
             if (cachedValue != null)
             {
                 return $"Cached Value with key {key} found with value : {cachedValue}";
@@ -31,7 +31,7 @@ namespace testCache.Controllers
 
             Thread.Sleep(5000);
             var saveVal = DateTime.Now.Second;
-            SetCache(key, saveVal);
+            CacheService.SetCache(key, saveVal);
             return $" call time : {callTime}, afterTime: {DateTime.Now}, Key: {key},value: {saveVal}";
         }
 
@@ -39,7 +39,7 @@ namespace testCache.Controllers
         public string GetObjectType(string key)
         {
             var callTime = DateTime.Now;
-            var cachedValue = GetObjectCache< TestSaveCacheObject>(key);
+            var cachedValue = CacheService.GetObjectCache< TestSaveCacheObject>(key);
             if (cachedValue != null)
             {
                 return $"Cached Object with key {key} found with value : { JsonConvert.SerializeObject(cachedValue) }";
@@ -53,34 +53,34 @@ namespace testCache.Controllers
                 Value = DateTime.Now.Second,
                 Name = "cached obj Jeff"
             };
-            
-            SetCache(key, saveObj);
+
+            CacheService.SetCache(key, saveObj);
             return $" call time : {callTime}, afterTime: {DateTime.Now}, Key: {key},value: {JsonConvert.SerializeObject(saveObj)}";
         }
+    }
 
-
-        private T GetObjectCache<T>(string cacheKey) where T: class
+    public static class CacheService {
+        public static T GetObjectCache<T>(string cacheKey) where T : class
         {
             ObjectCache cache = MemoryCache.Default;
             T obj = cache[cacheKey] as T;
             return obj;
         }
 
-        private T GetValueTypeCache<T>(string cacheKey)  
+        public static T GetValueTypeCache<T>(string cacheKey)
         {
             ObjectCache cache = MemoryCache.Default;
-            T obj = (T) cache[cacheKey];
+            T obj = (T)cache[cacheKey];
             return obj;
         }
 
-        private void SetCache<T>(string cacheKey, T cacheObj)
+        public static void SetCache<T>(string cacheKey, T cacheObj)
         {
             ObjectCache cache = MemoryCache.Default;
             CacheItemPolicy policy = new CacheItemPolicy();
             policy.AbsoluteExpiration = DateTime.Now + TimeSpan.FromMinutes(1);
             cache.Set(cacheKey, cacheObj, policy);
         }
-
     }
 
     public class TestSaveCacheObject
