@@ -12,7 +12,6 @@ namespace testCache.Controllers
 {
     public class ValuesController : ApiController
     {
-        // GET api/values
         public IEnumerable<string> Get()
         {
             var callTime = DateTime.Now;
@@ -31,7 +30,7 @@ namespace testCache.Controllers
 
             Thread.Sleep(5000);
             var saveVal = DateTime.Now.Second;
-            CacheService.SetCache(key, saveVal);
+            CacheService.SetCache(key, saveVal, 30);
             return $" call time : {callTime}, afterTime: {DateTime.Now}, Key: {key},value: {saveVal}";
         }
 
@@ -60,6 +59,7 @@ namespace testCache.Controllers
     }
 
     public static class CacheService {
+
         public static T GetObjectCache<T>(string cacheKey) where T : class
         {
             ObjectCache cache = MemoryCache.Default;
@@ -74,11 +74,11 @@ namespace testCache.Controllers
             return obj;
         }
 
-        public static void SetCache<T>(string cacheKey, T cacheObj)
+        public static void SetCache<T>(string cacheKey, T cacheObj, int expiredInSeconds = 60)
         {
             ObjectCache cache = MemoryCache.Default;
             CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.Now + TimeSpan.FromMinutes(1);
+            policy.AbsoluteExpiration = DateTime.Now + TimeSpan.FromSeconds(expiredInSeconds);
             cache.Set(cacheKey, cacheObj, policy);
         }
     }
